@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>CepVitrin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-hover: #2dd4bf10;
+    --border: #334155;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --accent: #6366f1;
+    --gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    --gradient-hover: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+    --red: #ef4444;
+    --green: #10b981;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.18);
+    --shadow-glow: 0 0 15px rgba(99, 102, 241, 0.5);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text-main);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  #root{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ---------- shared bits ---------- */
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight:800;
+  }
+  .brand{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    letter-spacing:-.01em;
+  }
+  button{
+    font-family:'Inter', sans-serif;
+    cursor:pointer;
+    border:none;
+    transition: all 0.2s ease;
+  }
+  input{
+    font-family:'Inter', sans-serif;
+    transition: all 0.2s ease;
+  }
+  input:focus, button:focus, textarea:focus{
+    outline:2px solid var(--accent);
+    outline-offset:2px;
+  }
+
+  /* ---------- login screen ---------- */
+  .login-wrap{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    background: radial-gradient(circle at top right, rgba(99,102,241,0.15), transparent 40%),
+                radial-gradient(circle at bottom left, rgba(168,85,247,0.15), transparent 40%);
+  }
+  .login-card{
+    width:100%;
+    max-width:380px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:24px;
+    padding:40px 32px;
+    box-shadow:var(--shadow);
+    position:relative;
+    backdrop-filter: blur(10px);
+  }
+  .login-title{
+    font-size:28px;
+    text-align:center;
+    margin:8px 0 4px;
+    color: #fff;
+  }
+  .login-sub{
+    text-align:center;
+    color:var(--text-muted);
+    font-size:14px;
+    margin-bottom:30px;
+  }
+  .field{
+    margin-bottom:18px;
+  }
+  .field label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    color:var(--text-muted);
+    margin-bottom:8px;
+  }
+  .field input{
+    width:100%;
+    padding:14px 16px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background: rgba(15, 23, 42, 0.6);
+    font-size:15px;
+    color:#fff;
+  }
+  .field input:focus {
+    border-color: var(--accent);
+    background: rgba(15, 23, 42, 0.9);
+  }
+  .login-btn, .save-btn{
+    width:100%;
+    padding:14px;
+    border-radius:12px;
+    background:var(--gradient);
+    color:#fff;
+    font-weight:700;
+    font-size:16px;
+    margin-top:10px;
+    box-shadow: var(--shadow-glow);
+  }
+  .login-btn:hover, .save-btn:hover{ 
+    background:var(--gradient-hover); 
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.6);
+  }
+  .login-error{
+    color:var(--red);
+    font-size:14px;
+    text-align:center;
+    margin-top:16px;
+    min-height:20px;
+    font-weight:500;
+  }
+  .login-hint{
+    text-align:center;
+    font-size:13px;
+    color:var(--text-muted);
+    margin-top:24px;
+  }
+  .cancel-btn{
+    width: 100%;
+    padding:14px;
+    border-radius:12px;
+    background:transparent;
+    border:1px solid var(--border);
+    font-size:15px;
+    font-weight:600;
+    color:var(--text-muted);
+    margin-top: 10px;
+  }
+  .cancel-btn:hover {
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+  }
+
+  /* ---------- app shell ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 24px;
+    border-bottom:1px solid var(--border);
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(12px);
+    position:sticky;
+    top:0;
+    z-index:5;
+  }
+  .topbar-title{
+    font-size:22px;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .topbar-actions{
+    display:flex;
+    gap:10px;
+  }
+  .pill-btn{
+    padding:10px 18px;
+    border-radius:100px;
+    background:transparent;
+    border:1px solid var(--border);
+    font-size:14px;
+    font-weight:600;
+    color:var(--text-main);
+  }
+  .pill-btn:hover{
+    background: rgba(255,255,255,0.05);
+  }
+  .pill-btn.active{
+    background:var(--gradient);
+    color:#fff;
+    border-color:transparent;
+    box-shadow: var(--shadow-glow);
+  }
+
+  .content{
+    flex:1;
+    max-width:680px;
+    width:100%;
+    margin:0 auto;
+    padding:30px 20px;
+  }
+
+  .search-box{
+    position:relative;
+    margin-bottom:24px;
+  }
+  .search-box input{
+    width:100%;
+    padding:18px 20px 18px 54px;
+    border-radius:16px;
+    border:1px solid var(--border);
+    background:var(--card);
+    font-size:16px;
+    color:#fff;
+    box-shadow:var(--shadow);
+  }
+  .search-box input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+  }
+  .search-box::before{
+    content:"";
+    position:absolute;
+    left:20px;
+    top:50%;
+    transform:translateY(-50%);
+    width:20px;
+    height:20px;
+    border:2.5px solid var(--text-muted);
+    border-radius:50%;
+  }
+  .search-box::after{
+    content:"";
+    position:absolute;
+    left:36px;
+    top:calc(50% + 6px);
+    width:10px;
+    height:2.5px;
+    background:var(--text-muted);
+    transform:rotate(45deg);
+  }
+
+  .result-count{
+    font-size:14px;
+    font-weight:500;
+    color:var(--text-muted);
+    margin:0 4px 16px;
+  }
+
+  .tag-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:20px 24px;
+    margin-bottom:16px;
+    display:flex;
+    align-items:center;
+    gap:18px;
+    box-shadow:var(--shadow);
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+  }
+  .tag-card:hover {
+    transform: translateY(-2px);
+    border-left: 4px solid var(--accent);
+    background: rgba(30, 41, 59, 0.8);
+  }
+  .tag-main{
+    flex:1;
+    min-width:0;
+  }
+  .tag-name{
+    font-size:18px;
+    font-weight:700;
+    margin-bottom:6px;
+    color: #fff;
+    overflow-wrap:break-word;
+  }
+  .tag-meta{
+    font-size:14px;
+    color:var(--text-muted);
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .tag-meta span {
+    background: rgba(255,255,255,0.05);
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .tag-price{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:24px;
+    color: #fff;
+    white-space:nowrap;
+    text-shadow: 0 2px 10px rgba(255,255,255,0.1);
+  }
+  .stock-low{ color:var(--red) !important; font-weight:700; background: rgba(239, 68, 68, 0.1) !important;}
+  .stock-ok{ color:var(--green) !important; background: rgba(16, 185, 129, 0.1) !important;}
+
+  .empty-state{
+    text-align:center;
+    padding:80px 20px;
+    color:var(--text-muted);
+  }
+  .empty-state .big{
+    font-family:'Fraunces', serif;
+    font-size:24px;
+    color:#fff;
+    margin-bottom:10px;
+  }
+
+  /* ---------- admin panel ---------- */
+  .admin-form{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:24px;
+    margin-bottom:24px;
+    box-shadow:var(--shadow);
+  }
+  .admin-form h3{
+    margin:0 0 20px;
+    font-size:18px;
+    color: #fff;
+    font-family:'Fraunces', serif;
+  }
+  .grid2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  .admin-form .field input{
+    padding:12px 16px;
+    font-size:15px;
+  }
+  .form-actions{
+    display:flex;
+    gap:12px;
+    margin-top:10px;
+  }
+  .row-actions{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .icon-btn{
+    background:rgba(255,255,255,0.05);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:8px 12px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--text-main);
+  }
+  .icon-btn.danger{ color:var(--red); border-color: rgba(239, 68, 68, 0.3); }
+  .icon-btn.danger:hover { background: rgba(239, 68, 68, 0.1); }
+  .icon-btn:hover{ background:rgba(255,255,255,0.1); transform: translateY(-1px);}
+
+  .add-fab{
+    position:fixed;
+    bottom:30px;
+    right:30px;
+    width:64px;
+    height:64px;
+    border-radius:50%;
+    background:var(--gradient);
+    color:#fff;
+    font-size:32px;
+    line-height:64px;
+    text-align:center;
+    box-shadow: var(--shadow-glow);
+    z-index:6;
+  }
+  .add-fab:hover{ 
+    background:var(--gradient-hover); 
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(168, 85, 247, 0.8);
+  }
+
+  .install-tip{
+    max-width:640px;
+    margin:0 auto;
+    padding:0 20px 30px;
+    font-size:13px;
+    color:var(--text-muted);
+    line-height:1.6;
+    text-align: center;
+  }
+  .install-tip b{ color:#fff; }
+
+  .toast{
+    position:fixed;
+    bottom:30px;
+    left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--gradient);
+    color:#fff;
+    padding:12px 24px;
+    border-radius:100px;
+    font-size:14px;
+    font-weight:700;
+    opacity:0;
+    transition:opacity .3s ease, transform .3s ease;
+    z-index:20;
+    pointer-events:none;
+    box-shadow: var(--shadow-glow);
+  }
+  .toast.show{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+  }
+
+  .pw-modal-bg{
+    position:fixed;
+    inset:0;
+    background:rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(8px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:30;
+    padding:20px;
+  }
+  .pw-modal{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:30px;
+    max-width:360px;
+    width:100%;
+    box-shadow:var(--shadow);
+  }
+  .pw-modal h3{
+    margin:0 0 20px;
+    font-family:'Fraunces', serif;
+    font-size:20px;
+    color: #fff;
+  }
+
+  .tag-hole, .tag-punch { display: none; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 480px) {
+    .grid2 {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .login-card {
+      padding: 32px 24px;
+    }
+    .content {
+      padding: 20px 16px;
+    }
+    .topbar {
+      padding: 16px;
+    }
+    .tag-card {
+      padding: 16px;
+      gap: 12px;
+    }
+    .tag-meta {
+      gap: 8px;
+    }
+    .add-fab {
+      bottom: 20px;
+      right: 20px;
+      width: 56px;
+      height: 56px;
+      line-height: 56px;
+      font-size: 28px;
+    }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC9np3CkBAWL5w6SICOzSg8fGTjbc3VPSA",
+  authDomain: "cepvitrin-f1829.firebaseapp.com",
+  projectId: "cepvitrin-f1829",
+  storageBucket: "cepvitrin-f1829.firebasestorage.app",
+  messagingSenderId: "774062610084",
+  appId: "1:774062610084:web:8c9255bf50b737e378b831",
+  measurementId: "G-RCRR5LJCQ5"
+};
+
+const app = initializeApp(firebaseConfig);
+window.auth = getAuth(app);
+window.db = getFirestore(app);
+window.fbMethods = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, doc, setDoc, getDoc };
+</script>
+<script type="module">
+(function(){
+  var root = document.getElementById('root');
+  var state = {
+    screen: 'loading', // loading | login | register | app
+    products: [],
+    currentUser: null,
+    query: '',
+    adminMode: false,
+    editingId: null,
+    showAddForm: false,
+    showPwModal: false,
+    loginError: ''
+  };
+
+  var DEFAULT_PRODUCTS = [];
+
+  function uid(){ return 'p' + Math.random().toString(36).slice(2,9); }
+
+  function toLower(s){ return (s||'').toLocaleLowerCase('tr'); }
+
+  function showToast(msg){
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    requestAnimationFrame(function(){ t.classList.add('show'); });
+    setTimeout(function(){
+      t.classList.remove('show');
+      setTimeout(function(){ t.remove(); }, 250);
+    }, 1800);
+  }
+
+  function checkSession(){
+    return new Promise(function(resolve) {
+      window.fbMethods.onAuthStateChanged(window.auth, async function(user) {
+        if(user) {
+          state.currentUser = { id: user.uid, email: user.email };
+          await loadProducts();
+          state.screen = 'app';
+        } else {
+          state.currentUser = null;
+          state.screen = 'login';
+        }
+        render();
+        resolve();
+      });
+    });
+  }
+
+  async function loadProducts(){
+    if(!state.currentUser) return;
+    try{
+      var d = window.fbMethods.doc(window.db, "products", state.currentUser.id);
+      var snap = await window.fbMethods.getDoc(d);
+      if(snap.exists()){
+        state.products = snap.data().items || [];
+      } else {
+        state.products = [];
+      }
+    }catch(e){
+      state.products = [];
+    }
+  }
+
+  async function saveProducts(){
+    if(!state.currentUser) return;
+    try{
+      var d = window.fbMethods.doc(window.db, "products", state.currentUser.id);
+      await window.fbMethods.setDoc(d, { items: state.products });
+    }catch(e){
+      showToast('Kaydedilemedi, tekrar deneyin.');
+    }
+  }
+
+  function el(tag, attrs, children){
+    var e = document.createElement(tag);
+    attrs = attrs || {};
+    for(var k in attrs){
+      if(k === 'text'){ e.textContent = attrs[k]; }
+      else if(k === 'html'){ e.innerHTML = attrs[k]; }
+      else if(k.indexOf('on') === 0){ e.addEventListener(k.slice(2).toLowerCase(), attrs[k]); }
+      else if(k === 'class'){ e.className = attrs[k]; }
+      else { e.setAttribute(k, attrs[k]); }
+    }
+    (children||[]).forEach(function(c){ if(c) e.appendChild(c); });
+    return e;
+  }
+
+  function render(){
+    root.innerHTML = '';
+    if(state.screen === 'loading'){
+      root.appendChild(el('div', {class:'login-wrap'}, [
+        el('div', {class:'eyebrow', text:'Yükleniyor…'})
+      ]));
+      return;
+    }
+    if(state.screen === 'login'){
+      renderLogin();
+      return;
+    }
+    if(state.screen === 'register'){
+      renderRegister();
+      return;
+    }
+    renderApp();
+  }
+
+  function renderLogin(){
+    var userInput = el('input', {type:'text', autocomplete:'username', placeholder:'kullanıcı adı'});
+    var passInput = el('input', {type:'password', autocomplete:'current-password', placeholder:'şifre'});
+
+    async function doLogin(){
+      var u = userInput.value.trim();
+      var p = passInput.value;
+      if(!u || !p){
+        state.loginError = 'Lütfen doldurun.'; render(); return;
+      }
+      if(u.indexOf('@') === -1) u = u + '@cepvitrin.com';
+      try {
+        await window.fbMethods.signInWithEmailAndPassword(window.auth, u, p);
+        state.loginError = '';
+      } catch(e) {
+        state.loginError = 'Hata: ' + e.message;
+        render();
+      }
+    }
+
+    passInput.addEventListener('keydown', function(ev){
+      if(ev.key === 'Enter') doLogin();
+    });
+
+    var card = el('div', {class:'login-card'}, [
+      el('div', {class:'tag-hole'}),
+      el('div', {class:'eyebrow', text:'CEPVİTRİN'}),
+      el('div', {class:'login-title brand', text:'Giriş yap'}),
+      el('div', {class:'login-sub', text:'Kendi dükkanınıza giriş yapın'}),
+      el('div', {class:'field'}, [
+        el('label', {text:'Kullanıcı adı'}),
+        userInput
+      ]),
+      el('div', {class:'field'}, [
+        el('label', {text:'Şifre'}),
+        passInput
+      ]),
+      el('button', {class:'login-btn', text:'Giriş Yap', onClick: doLogin}),
+      el('div', {class:'login-error', text: state.loginError}),
+      el('div', {class:'login-hint', text:'Hesabınız yok mu?'}),
+      el('button', {class:'cancel-btn', style:'width:100%; margin-top:8px;', text:'Kayıt Ol', onClick: function(){ state.screen='register'; state.loginError=''; render(); }})
+    ]);
+
+    root.appendChild(el('div', {class:'login-wrap'}, [card]));
+    userInput.focus();
+  }
+
+  function renderRegister(){
+    var userInput = el('input', {type:'text', autocomplete:'username', placeholder:'yeni kullanıcı adı'});
+    var passInput = el('input', {type:'password', autocomplete:'new-password', placeholder:'yeni şifre'});
+
+    async function doRegister(){
+      var u = userInput.value.trim();
+      var p = passInput.value;
+      if(!u || !p) { state.loginError = 'Tüm alanları doldurun'; render(); return; }
+      if(u.indexOf('@') === -1) u = u + '@cepvitrin.com';
+      try {
+        await window.fbMethods.createUserWithEmailAndPassword(window.auth, u, p);
+        state.products = [];
+        state.loginError = '';
+      } catch(e) {
+        state.loginError = 'Hata: ' + e.message;
+        render();
+      }
+    }
+
+    passInput.addEventListener('keydown', function(ev){
+      if(ev.key === 'Enter') doRegister();
+    });
+
+    var card = el('div', {class:'login-card'}, [
+      el('div', {class:'tag-hole'}),
+      el('div', {class:'eyebrow', text:'CEPVİTRİN'}),
+      el('div', {class:'login-title brand', text:'Kayıt Ol'}),
+      el('div', {class:'login-sub', text:'Kendinize ait bir alan oluşturun'}),
+      el('div', {class:'field'}, [
+        el('label', {text:'Kullanıcı adı'}),
+        userInput
+      ]),
+      el('div', {class:'field'}, [
+        el('label', {text:'Şifre'}),
+        passInput
+      ]),
+      el('button', {class:'save-btn', style:'width:100%; margin-top:8px;', text:'Kayıt Ol', onClick: doRegister}),
+      el('div', {class:'login-error', text: state.loginError}),
+      el('div', {class:'login-hint', text:'Zaten hesabınız var mı?'}),
+      el('button', {class:'cancel-btn', style:'width:100%; margin-top:8px;', text:'Giriş Ekranına Dön', onClick: function(){ state.screen='login'; state.loginError=''; render(); }})
+    ]);
+
+    root.appendChild(el('div', {class:'login-wrap'}, [card]));
+    userInput.focus();
+  }
+
+  function filteredProducts(){
+    var q = toLower(state.query.trim());
+    if(!q) return state.products;
+    return state.products.filter(function(p){
+      return toLower(p.name).indexOf(q) !== -1 ||
+             toLower(p.brand).indexOf(q) !== -1 ||
+             toLower(p.barcode).indexOf(q) !== -1;
+    });
+  }
+
+  function renderApp(){
+    var top = el('div', {class:'topbar'}, [
+      el('div', {class:'topbar-title brand', text:'CepVitrin'}),
+      el('div', {class:'topbar-actions'}, [
+        el('button', {
+          class: 'pill-btn' + (state.adminMode ? ' active' : ''),
+          text: state.adminMode ? 'Yönetim: Açık' : 'Yönet',
+          onClick: function(){ state.adminMode = !state.adminMode; state.showAddForm=false; state.editingId=null; render(); }
+        }),
+        el('button', {class:'pill-btn', text:'Çıkış', onClick: async function(){
+          try{
+            await window.fbMethods.signOut(window.auth);
+          }catch(e){}
+          state.query = '';
+          state.adminMode = false;
+        }})
+      ])
+    ]);
+
+    var content = el('div', {class:'content'});
+
+    var searchInput = el('input', {
+      type:'text',
+      placeholder:'Ürün ara (isim, marka veya barkod)…',
+      value: state.query,
+      oninput: function(ev){ state.query = ev.target.value; renderResults(); }
+    });
+    content.appendChild(el('div', {class:'search-box'}, [searchInput]));
+
+    if(state.adminMode){
+      content.appendChild(renderChangePwLink());
+    }
+
+    var resultsWrap = el('div', {id:'results-wrap'});
+    content.appendChild(resultsWrap);
+
+    root.appendChild(top);
+    root.appendChild(content);
+
+    if(state.adminMode){
+      var fab = el('button', {class:'add-fab', text:'+', onClick: function(){
+        state.showAddForm = true;
+        state.editingId = null;
+        render();
+      }});
+      root.appendChild(fab);
+    }
+
+    root.appendChild(el('div', {class:'install-tip'}, [
+      el('span', {html: '<b>Telefona ekle:</b> Safari veya Chrome\'da bu sayfayı aç → Paylaş → "Ana Ekrana Ekle". Böylece uygulama gibi tek dokunuşla açılır.'})
+    ]));
+
+    if(state.showPwModal){
+      renderPwModal();
+    }
+
+    renderResults();
+  }
+
+  function renderChangePwLink(){
+    return el('div', {style:'margin:-6px 0 16px;'}, [
+      el('button', {class:'icon-btn', text:'Şifreyi değiştir', onClick: function(){
+        state.showPwModal = true;
+        render();
+      }})
+    ]);
+  }
+
+  function renderPwModal(){
+    var newUser = el('input', {type:'text', value: state.auth.username, style:'width:100%;padding:10px;border-radius:8px;border:1px solid var(--line);margin-bottom:10px;'});
+    var newPass = el('input', {type:'text', value: state.auth.password, style:'width:100%;padding:10px;border-radius:8px;border:1px solid var(--line);margin-bottom:14px;'});
+
+    var modal = el('div', {class:'pw-modal'}, [
+      el('h3', {text:'Giriş bilgilerini değiştir'}),
+      el('div', {class:'field'}, [el('label', {text:'Kullanıcı adı'}), newUser]),
+      el('div', {class:'field'}, [el('label', {text:'Şifre'}), newPass]),
+      el('div', {class:'form-actions'}, [
+        el('button', {class:'save-btn', text:'Kaydet', onClick: async function(){
+          state.auth = { username: newUser.value.trim() || 'admin', password: newPass.value || '1234' };
+          await saveAuth();
+          state.showPwModal = false;
+          showToast('Giriş bilgileri güncellendi.');
+          render();
+        }}),
+        el('button', {class:'cancel-btn', text:'Vazgeç', onClick: function(){
+          state.showPwModal = false;
+          render();
+        }})
+      ])
+    ]);
+
+    var bg = el('div', {class:'pw-modal-bg', onClick: function(ev){ if(ev.target === bg){ state.showPwModal = false; render(); } }}, [modal]);
+    root.appendChild(bg);
+  }
+
+  function renderResults(){
+    var wrap = document.getElementById('results-wrap');
+    if(!wrap) return;
+    wrap.innerHTML = '';
+
+    if(state.showAddForm || state.editingId){
+      wrap.appendChild(renderProductForm());
+    }
+
+    var list = filteredProducts();
+
+    if(!state.adminMode){
+      wrap.appendChild(el('div', {class:'result-count', text: state.query ? (list.length + ' sonuç') : (list.length + ' ürün') }));
+    }
+
+    if(list.length === 0){
+      wrap.appendChild(el('div', {class:'empty-state'}, [
+        el('div', {class:'big', text:'Ürün bulunamadı'}),
+        el('div', {text: state.query ? 'Farklı bir kelime deneyin.' : 'Henüz ürün eklenmemiş.'})
+      ]));
+      return;
+    }
+
+    list.forEach(function(p){
+      wrap.appendChild(renderTag(p));
+    });
+  }
+
+  function renderTag(p){
+    var stockNum = parseInt(p.stock, 10);
+    var stockClass = (!isNaN(stockNum) && stockNum <= 2) ? 'stock-low' : 'stock-ok';
+
+    var meta = [];
+    if(p.brand) meta.push(el('span', {text: p.brand}));
+    if(p.stock !== '' && p.stock != null) meta.push(el('span', {class: stockClass, text: 'Stok: ' + p.stock}));
+    if(p.barcode) meta.push(el('span', {text: 'Barkod: ' + p.barcode}));
+
+    var main = el('div', {class:'tag-main'}, [
+      el('div', {class:'tag-name', text: p.name}),
+      el('div', {class:'tag-meta'}, meta)
+    ]);
+
+    var right;
+    if(state.adminMode){
+      right = el('div', {class:'row-actions'}, [
+        el('div', {class:'tag-price', text: p.price, style:'font-size:17px;text-align:right;'}),
+        el('div', {style:'display:flex;gap:6px;'}, [
+          el('button', {class:'icon-btn', text:'Düzenle', onClick: function(){
+            state.editingId = p.id;
+            state.showAddForm = false;
+            render();
+          }}),
+          el('button', {class:'icon-btn danger', text:'Sil', onClick: async function(){
+            if(confirm('"' + p.name + '" silinsin mi?')){
+              state.products = state.products.filter(function(x){ return x.id !== p.id; });
+              await saveProducts();
+              showToast('Ürün silindi.');
+              renderResults();
+            }
+          }})
+        ])
+      ]);
+    } else {
+      right = el('div', {class:'tag-price', text: p.price});
+    }
+
+    return el('div', {class:'tag-card'}, [
+      el('div', {class:'tag-punch'}),
+      main,
+      right
+    ]);
+  }
+
+  function renderProductForm(){
+    var editing = state.editingId ? state.products.find(function(p){ return p.id === state.editingId; }) : null;
+
+    var nameInput = el('input', {type:'text', value: editing ? editing.name : ''});
+    var brandInput = el('input', {type:'text', value: editing ? editing.brand : ''});
+    var priceInput = el('input', {type:'text', value: editing ? editing.price : '', placeholder:'ör. 2.499 TL'});
+    var stockInput = el('input', {type:'text', value: editing ? editing.stock : ''});
+    var barcodeInput = el('input', {type:'text', value: editing ? (editing.barcode||'') : ''});
+
+    function doSave(){
+      var name = nameInput.value.trim();
+      var price = priceInput.value.trim();
+      if(!name || !price){
+        showToast('Ürün adı ve fiyat zorunlu.');
+        return;
+      }
+      if(editing){
+        editing.name = name;
+        editing.brand = brandInput.value.trim();
+        editing.price = price;
+        editing.stock = stockInput.value.trim();
+        editing.barcode = barcodeInput.value.trim();
+      } else {
+        state.products.push({
+          id: uid(),
+          name: name,
+          brand: brandInput.value.trim(),
+          price: price,
+          stock: stockInput.value.trim(),
+          barcode: barcodeInput.value.trim()
+        });
+      }
+      saveProducts();
+      state.showAddForm = false;
+      state.editingId = null;
+      showToast(editing ? 'Ürün güncellendi.' : 'Ürün eklendi.');
+      render();
+    }
+
+    return el('div', {class:'admin-form'}, [
+      el('h3', {text: editing ? 'Ürünü düzenle' : 'Yeni ürün ekle'}),
+      el('div', {class:'field'}, [el('label', {text:'Ürün adı'}), nameInput]),
+      el('div', {class:'grid2'}, [
+        el('div', {class:'field'}, [el('label', {text:'Marka'}), brandInput]),
+        el('div', {class:'field'}, [el('label', {text:'Fiyat'}), priceInput])
+      ]),
+      el('div', {class:'grid2'}, [
+        el('div', {class:'field'}, [el('label', {text:'Stok'}), stockInput]),
+        el('div', {class:'field'}, [el('label', {text:'Barkod (opsiyonel)'}), barcodeInput])
+      ]),
+      el('div', {class:'form-actions'}, [
+        el('button', {class:'save-btn', text: editing ? 'Güncelle' : 'Ekle', onClick: doSave}),
+        el('button', {class:'cancel-btn', text:'Vazgeç', onClick: function(){
+          state.showAddForm = false;
+          state.editingId = null;
+          render();
+        }})
+      ])
+    ]);
+  }
+
+  async function init(){
+    render();
+    await checkSession();
+    render();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
