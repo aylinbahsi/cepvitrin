@@ -25,4 +25,4 @@ Projeyi bilgisayarınıza indirdikten sonra sadece **`index.html`** dosyasını 
 *(Firebase bağlantı ayarları uygulamanın içine entegre edilmiştir. Kendi Firebase projenizi bağlamak isterseniz, `index.html` içindeki `firebaseConfig` değişkenini kendi projenizin API anahtarlarıyla değiştirebilirsiniz.)*
 
 ## 🌐 Canlı Yayın (Deploy)
-Bu proje sadece tek bir `index.html` dosyasından oluştuğu için **Netlify**, **Vercel** veya **Firebase Hosting** gibi sistemler üzerinden saniyeler içinde ücretsiz olarak canlıya alınabilir.
+ **Netlify** üzerinden yayınlandı. https://cepvitrin.netlify.app/ 
